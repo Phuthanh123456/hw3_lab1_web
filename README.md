@@ -7,10 +7,10 @@ A responsive, framework-free event landing page with a drift-free countdown and 
 Install Python 3, open a terminal in this project folder, and start a local HTTP server:
 
 ```powershell
-py -m http.server 8000
+py -m http.server 8003
 ```
 
-Open <http://localhost:8000>. The browser must load the ES modules over HTTP; do not open `index.html` with `file://`. Stop the server with `Ctrl+C`.
+Open <http://localhost:8003>. HW3 uses port **8003** so it can run beside HW1 (8001) and HW2 (8002). The browser must load the ES modules over HTTP; do not open `index.html` with `file://`. Stop the server with `Ctrl+C`.
 
 ## Features
 
