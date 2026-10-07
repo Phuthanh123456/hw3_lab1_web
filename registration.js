@@ -117,14 +117,16 @@ export function createRegistrationController({
     }
 
     stateMachine.transition(RegistrationState.SUBMITTING);
+    let result;
     try {
-      const result = await submitRegistration(validation.data);
-      stateMachine.transition(RegistrationState.SUCCESS);
-      return Object.freeze({ accepted: true, state: RegistrationState.SUCCESS, result });
+      result = await submitRegistration(validation.data);
     } catch (error) {
       stateMachine.transition(RegistrationState.ERROR);
       return Object.freeze({ accepted: true, state: RegistrationState.ERROR, error });
     }
+
+    stateMachine.transition(RegistrationState.SUCCESS);
+    return Object.freeze({ accepted: true, state: RegistrationState.SUCCESS, result });
   }
 
   return Object.freeze({

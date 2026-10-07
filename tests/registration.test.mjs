@@ -113,3 +113,17 @@ test("ignores a second submission while the first one is pending", async () => {
   const result = await firstSubmission;
   assert.equal(result.state, RegistrationState.SUCCESS);
 });
+
+test("does not treat transition notification errors as submit failures", async () => {
+  const controller = createRegistrationController({
+    submitRegistration: async () => ({ ok: true }),
+    onTransition(state) {
+      if (state === RegistrationState.SUCCESS) {
+        throw new Error("Status rendering failed.");
+      }
+    },
+  });
+
+  await assert.rejects(controller.submit(validRegistration), /Status rendering failed/);
+  assert.equal(controller.getState(), RegistrationState.SUCCESS);
+});
