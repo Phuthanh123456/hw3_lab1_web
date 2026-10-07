@@ -2,7 +2,7 @@
 
 ## Kết quả review
 
-Đã xác minh được **2 lỗi thật trên 3 lỗi yêu cầu** bằng Git history, đọc diff và chạy lại các test. Không tìm đủ bằng chứng cho lỗi thứ ba nên không tạo thêm lỗi giả. Review này không dùng DevTools breakpoint.
+Đã xác minh được **3 lỗi thật** bằng Git history, đọc diff, test và kiểm tra trên Chrome thật qua Chrome DevTools Protocol. Lỗi thứ ba được phát hiện khi kiểm tra lại toàn bộ HW1–HW3, sau báo cáo ban đầu chỉ xác minh được hai lỗi. Không dùng DevTools breakpoint.
 
 ## Lỗi 1 — Countdown từ chối timestamp có phần giây lẻ dài hơn 3 chữ số
 
@@ -18,6 +18,16 @@
 3. **Sửa và xác nhận:** Chỉ đặt lời gọi `submitRegistration()` trong `try/catch`; chuyển trạng thái Success sau khối đó. Test hồi quy xác nhận lỗi callback không bị biến thành lỗi submit hoặc chuyển state sai. Bộ kiểm tra hiện tại đạt 17/17.
 4. **Commit:** Lỗi được đưa vào `2f1e625` (`feat: implement registration form state machine`); sửa ở `03b049f` (`fix(form): isolate submit failures from state notifications`).
 
-## Lỗi thứ ba chưa được xác minh
+## Lỗi 3 — Submit bị từ chối vẫn thay đổi tên trong thông báo Success
 
-Không có thêm lỗi nào trong Git history hiện tại có cả bằng chứng về hành vi sai và commit sửa tương ứng. Slice 3 kiểm tra gửi lặp và payload XSS đều đạt; không ghi chúng thành lỗi đã xảy ra. Để tiếp tục tìm lỗi thật, nên review thêm các đường biên chưa được kiểm tra trực tiếp trên trình duyệt: nhập payload rồi quan sát DOM/console trong DevTools, kích hoạt submit bằng Enter và click liên tục, và fault-injection cho lỗi callback ở từng chuyển trạng thái form. Các bước DevTools này chưa được thực hiện trong audit hiện tại.
+1. **Mô tả và vị trí:** Submit handler trong `app.js` chỉ kiểm tra `result.state === Success` trước khi hiển thị tên. Khi controller đã ở Success, lần submit mới trả về `accepted: false` nhưng vẫn có state Success. Vì vậy thay đổi tên rồi gọi `form.requestSubmit()` làm thông báo thành công đổi sang một tên chưa được gửi, dù state guard vẫn ngăn lần gửi mới.
+2. **Cách phát hiện:** Trên Chrome thật, gửi form thành công, lưu thông báo, đổi tên thành `Not submitted`, rồi gọi `requestSubmit()` lần nữa. Bộ kiểm tra browser thấy thông báo đổi từ tên đã gửi sang `Not submitted`, trong khi số lần gọi submit mô phỏng vẫn là 1. Sau đó mở rộng `tests/registration-output.test.mjs` với cùng đường đi; chạy test trước bản sửa nhận `AssertionError: rejected submissions must not replace the successful submission's name`. Git diff xác định điều kiện thiếu `result.accepted` được thêm ở `d3cb8fd`.
+3. **Sửa và xác nhận:** Chỉ cập nhật thông báo Success khi cả `result.accepted` và state Success đều đúng. Test hồi quy xác nhận lần gửi bị từ chối không tạo timer mới và không đổi thông báo cũ. Bộ test Node đạt 17/17 sau sửa; kiểm tra lại trên Chrome xác nhận tên cũ được giữ nguyên và số lần submit vẫn là 1.
+4. **Commit:** Lỗi được đưa vào `d3cb8fd` (`feat: prevent duplicate submits and secure form output`); sửa ở `b165371` (`fix(form): preserve accepted success output on duplicate submits`).
+
+## Các kiểm tra không phát hiện lỗi
+
+- Countdown được kiểm tra UTC, timestamp sai, hết hạn, restart/dispose và tick chậm. Trên Chrome, dịch đồng hồ thêm 90 giây cho thấy lần tick kế tiếp tính lại từ `Date.now()`.
+- Tám lần gọi submit nhanh khi đang Submitting chỉ tạo một lần submit mô phỏng, nút bị khóa đúng trạng thái.
+- Payload `<img src=x onerror=alert(1)>` được thử trên Chrome thật: thông báo chứa nguyên văn payload, không có node `img` được tạo trong vùng trạng thái, và `alert` không được gọi. Phần hiển thị dùng `textContent`.
+- Chuyển trạng thái thành công, lỗi và thử lại được kiểm tra bằng submitter mô phỏng trong test Node. Không gọi dịch vụ ngoài.
