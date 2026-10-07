@@ -44,15 +44,16 @@
             <p class="eyebrow">Time remaining</p>
             <h2 id="countdown-heading">Countdown</h2>
           </div>
-          <p class="section-note">A countdown will appear once an event date is set.</p>
+          <p class="section-note">Target UTC: <time id="countdown-target">Loading date…</time></p>
         </div>
 
-        <ul class="countdown-grid" aria-label="Countdown units">
-          <li class="countdown-unit"><span class="countdown-value">--</span><span class="countdown-label">Days</span></li>
-          <li class="countdown-unit"><span class="countdown-value">--</span><span class="countdown-label">Hours</span></li>
-          <li class="countdown-unit"><span class="countdown-value">--</span><span class="countdown-label">Minutes</span></li>
-          <li class="countdown-unit"><span class="countdown-value">--</span><span class="countdown-label">Seconds</span></li>
-        </ul>
+        <div id="countdown-display" class="countdown-grid" role="timer" aria-label="Time remaining">
+          <div class="countdown-unit"><span class="countdown-value" data-countdown-part="days">--</span><span class="countdown-label">Days</span></div>
+          <div class="countdown-unit"><span class="countdown-value" data-countdown-part="hours">--</span><span class="countdown-label">Hours</span></div>
+          <div class="countdown-unit"><span class="countdown-value" data-countdown-part="minutes">--</span><span class="countdown-label">Minutes</span></div>
+          <div class="countdown-unit"><span class="countdown-value" data-countdown-part="seconds">--</span><span class="countdown-label">Seconds</span></div>
+        </div>
+        <p id="countdown-status" class="countdown-status" role="status" aria-live="polite">Countdown is active.</p>
       </section>
 
       <section id="registration" class="content-section registration-section" aria-labelledby="registration-heading">

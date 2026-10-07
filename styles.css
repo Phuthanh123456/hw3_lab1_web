@@ -261,6 +261,11 @@ h1 {
   font-size: 0.9rem;
 }
 
+.countdown-status {
+  margin: 0.75rem 0 0;
+  color: var(--muted);
+}
+
 .registration-form {
   padding: clamp(1rem, 4vw, 1.75rem);
   border: 1px solid var(--line);
