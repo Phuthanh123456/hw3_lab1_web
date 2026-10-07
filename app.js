@@ -76,7 +76,7 @@ registrationForm.addEventListener("submit", async (event) => {
 
   if (result.validationError) {
     registrationStatusMessage.textContent = result.validationError;
-  } else if (result.state === RegistrationState.SUCCESS) {
+  } else if (result.accepted && result.state === RegistrationState.SUCCESS) {
     const submittedName = typeof fullName === "string" ? fullName.trim() : "";
     registrationStatusMessage.textContent = `Success — demo complete for ${submittedName}; no data was sent to a server.`;
   }

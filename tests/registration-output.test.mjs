@@ -1,8 +1,9 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-test("renders an HTML-shaped name as text without invoking HTML sinks", async () => {
+test("renders an HTML-shaped name as text and preserves accepted success output", async () => {
   const payload = "<img src=x onerror=alert(1)>";
+  let fullName = payload;
   let alertCalls = 0;
   let unsafeHtmlWrites = 0;
   let submitHandler;
@@ -63,7 +64,7 @@ test("renders an HTML-shaped name as text without invoking HTML sinks", async ()
   });
   replaceGlobal("FormData", class {
     get(name) {
-      return name === "fullName" ? payload : name === "email" ? "alex@example.com" : null;
+      return name === "fullName" ? fullName : name === "email" ? "alex@example.com" : null;
     }
   });
   replaceGlobal("setInterval", () => 1);
@@ -94,6 +95,13 @@ test("renders an HTML-shaped name as text without invoking HTML sinks", async ()
       `Success — demo complete for ${payload}; no data was sent to a server.`);
     assert.equal(alertCalls, 0);
     assert.equal(unsafeHtmlWrites, 0);
+
+    const originalSuccessMessage = formStatusMessage.textContent;
+    fullName = "Not submitted";
+    await submitHandler({ preventDefault() {} });
+    assert.equal(scheduledTimeouts.length, 1, "a post-success duplicate does not submit again");
+    assert.equal(formStatusMessage.textContent, originalSuccessMessage,
+      "rejected submissions must not replace the successful submission's name");
   } finally {
     for (const [name, original] of originalGlobals) {
       if (original.existed) {
