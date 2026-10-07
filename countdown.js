@@ -1,4 +1,4 @@
-const UTC_ISO_TIMESTAMP = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(?:\.(\d{1,3}))?Z$/;
+const UTC_ISO_TIMESTAMP = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(?:\.(\d+))?Z$/;
 const SECONDS_PER_DAY = 24 * 60 * 60;
 
 export function parseUtcIsoTimestamp(value) {
@@ -8,8 +8,7 @@ export function parseUtcIsoTimestamp(value) {
   }
 
   const [, yearText, monthText, dayText, hourText, minuteText, secondText, fraction = ""] = match;
-  const timestamp = Date.parse(value);
-  const date = new Date(timestamp);
+  // Date.now() has millisecond precision, so retain the first three fractional digits.
   const expected = {
     year: Number(yearText),
     month: Number(monthText) - 1,
@@ -17,8 +16,12 @@ export function parseUtcIsoTimestamp(value) {
     hour: Number(hourText),
     minute: Number(minuteText),
     second: Number(secondText),
-    millisecond: Number(fraction.padEnd(3, "0")),
+    millisecond: Number(fraction.slice(0, 3).padEnd(3, "0")),
   };
+  const date = new Date(0);
+  date.setUTCFullYear(expected.year, expected.month, expected.day);
+  date.setUTCHours(expected.hour, expected.minute, expected.second, expected.millisecond);
+  const timestamp = date.getTime();
 
   const isValidDate = Number.isFinite(timestamp)
     && date.getUTCFullYear() === expected.year
