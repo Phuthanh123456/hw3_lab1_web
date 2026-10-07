@@ -19,8 +19,10 @@ Open <http://localhost:8000> in a browser. The page uses an ES module, so serve 
 - `registration.js` contains the form state machine, input validation, and a local submit simulator with selectable success/error outcomes for tests.
 - `app.js` connects the countdown and registration modules to the page.
 
+The registration form trims outer whitespace, accepts names up to 100 characters, and accepts email addresses up to 254 characters. Submitted names are displayed as text.
+
 Registration is a demo: it simulates success in the browser and does not send form data to a server.
 
 ## Run the checks
 
-Run the countdown and registration checks with `node --test tests/countdown.test.mjs tests/registration.test.mjs`.
+Run the countdown, registration, and safe-output checks with `node --test tests/countdown.test.mjs tests/registration.test.mjs tests/registration-output.test.mjs`.

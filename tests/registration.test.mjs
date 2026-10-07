@@ -4,6 +4,7 @@ import {
   createDemoSubmitter,
   createRegistrationController,
   createRegistrationStateMachine,
+  REGISTRATION_LIMITS,
   RegistrationState,
 } from "../registration.js";
 
@@ -37,6 +38,50 @@ test("validates form data before entering Submitting", async () => {
   assert.equal(controller.getState(), RegistrationState.IDLE);
   assert.equal(submissionCount, 0);
 });
+
+test("trims outer whitespace and preserves valid name punctuation and Unicode", async () => {
+  let received;
+  const controller = createRegistrationController({
+    async submitRegistration(data) {
+      received = data;
+      return { ok: true };
+    },
+  });
+
+  const result = await controller.submit({
+    fullName: "  Zoë O'Neil-Smith  ",
+    email: "  zoe@example.com  ",
+  });
+
+  assert.equal(result.state, RegistrationState.SUCCESS);
+  assert.deepEqual(received, { fullName: "Zoë O'Neil-Smith", email: "zoe@example.com" });
+});
+
+test("enforces name and email length limits after trimming", async () => {
+  const controller = createRegistrationController({ submitRegistration: async () => ({ ok: true }) });
+  const validBoundary = await controller.submit({
+    fullName: ` ${"N".repeat(REGISTRATION_LIMITS.fullName)} `,
+    email: `${"a".repeat(69)}@${"b".repeat(184)}`,
+  });
+  assert.equal(validBoundary.state, RegistrationState.SUCCESS);
+
+  const overlongName = await validateWithFreshController({
+    fullName: "N".repeat(REGISTRATION_LIMITS.fullName + 1),
+    email: "alex@example.com",
+  });
+  assert.equal(overlongName.validationError, `Full name must be ${REGISTRATION_LIMITS.fullName} characters or fewer.`);
+
+  const overlongEmail = await validateWithFreshController({
+    fullName: "Alex Example",
+    email: `${"a".repeat(70)}@${"b".repeat(184)}`,
+  });
+  assert.equal(overlongEmail.validationError, `Email address must be ${REGISTRATION_LIMITS.email} characters or fewer.`);
+});
+
+async function validateWithFreshController(values) {
+  const controller = createRegistrationController({ submitRegistration: async () => ({ ok: true }) });
+  return controller.submit(values);
+}
 
 test("moves through Submitting to Success with the demo submitter", async () => {
   const transitions = [];
@@ -92,7 +137,7 @@ test("the demo submitter can simulate either outcome without a service", async (
   );
 });
 
-test("ignores a second submission while the first one is pending", async () => {
+test("ignores rapid duplicate submissions while the first one is pending", async () => {
   let completeSubmission;
   let submissionCount = 0;
   const controller = createRegistrationController({
@@ -104,9 +149,11 @@ test("ignores a second submission while the first one is pending", async () => {
 
   const firstSubmission = controller.submit(validRegistration);
   assert.equal(controller.getState(), RegistrationState.SUBMITTING);
-  const duplicate = await controller.submit(validRegistration);
-  assert.equal(duplicate.accepted, false);
-  assert.equal(duplicate.state, RegistrationState.SUBMITTING);
+  const duplicates = await Promise.all(
+    Array.from({ length: 8 }, () => controller.submit(validRegistration)),
+  );
+  assert.ok(duplicates.every((duplicate) => duplicate.accepted === false));
+  assert.ok(duplicates.every((duplicate) => duplicate.state === RegistrationState.SUBMITTING));
   assert.equal(submissionCount, 1);
 
   completeSubmission({ ok: true });

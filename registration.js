@@ -13,6 +13,7 @@ const VALID_TRANSITIONS = new Map([
 ]);
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+$/u;
+export const REGISTRATION_LIMITS = Object.freeze({ fullName: 100, email: 254 });
 
 export function createRegistrationStateMachine({ onTransition = () => {} } = {}) {
   if (typeof onTransition !== "function") {
@@ -47,6 +48,12 @@ export function validateRegistrationData(values) {
   }
   if (!email) {
     return Object.freeze({ valid: false, message: "Enter your email address." });
+  }
+  if (fullName.length > REGISTRATION_LIMITS.fullName) {
+    return Object.freeze({ valid: false, message: `Full name must be ${REGISTRATION_LIMITS.fullName} characters or fewer.` });
+  }
+  if (email.length > REGISTRATION_LIMITS.email) {
+    return Object.freeze({ valid: false, message: `Email address must be ${REGISTRATION_LIMITS.email} characters or fewer.` });
   }
   if (!EMAIL_PATTERN.test(email)) {
     return Object.freeze({ valid: false, message: "Enter a valid email address." });
