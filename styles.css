@@ -273,6 +273,14 @@ h1 {
   background: var(--surface);
 }
 
+.demo-notice {
+  margin-bottom: 1rem;
+  padding: 0.8rem 1rem;
+  border-inline-start: 0.25rem solid var(--accent-dark);
+  color: var(--ink);
+  background: #e9f2dc;
+}
+
 .form-fields {
   display: grid;
   gap: 1rem;
@@ -313,20 +321,27 @@ h1 {
   cursor: not-allowed;
 }
 
-.form-hint {
-  margin: 0.65rem 0 1.25rem;
-  color: var(--muted);
-  font-size: 0.9rem;
-}
-
 .form-status {
   display: flex;
   flex-direction: column;
   gap: 0.15rem;
+  margin-top: 1rem;
   padding: 0.9rem 1rem;
   border: 1px solid var(--line);
   border-radius: 0.55rem;
   background: #f7f9f8;
+}
+
+.form-status[data-state="submitting"] {
+  border-inline-start: 0.25rem solid #075fc5;
+}
+
+.form-status[data-state="success"] {
+  border-inline-start: 0.25rem solid #286b35;
+}
+
+.form-status[data-state="error"] {
+  border-inline-start: 0.25rem solid #a32828;
 }
 
 .status-label {

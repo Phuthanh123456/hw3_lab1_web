@@ -62,9 +62,10 @@
             <p class="eyebrow">Take part</p>
             <h2 id="registration-heading">Registration</h2>
           </div>
-          <p class="section-note">Complete the fields below when registration is available.</p>
+          <p class="section-note">Use the local demo below to preview registration states.</p>
         </div>
 
+        <p class="demo-notice">Demo only: registration is simulated in this browser. No information is sent to a server.</p>
         <form id="registration-form" class="registration-form">
           <div class="form-fields">
             <div class="field">
@@ -76,11 +77,10 @@
               <input id="email-address" name="email" type="email" autocomplete="email" required>
             </div>
           </div>
-          <button class="register-button" type="button" disabled aria-describedby="form-status">Register</button>
-          <p class="form-hint">Registration behavior will be added in a later milestone.</p>
+          <button id="registration-submit" class="register-button" type="submit" aria-describedby="form-status">Register</button>
           <div id="form-status" class="form-status" data-state="idle" role="status" aria-live="polite" aria-atomic="true">
             <span class="status-label">Form status</span>
-            <span>Idle — registration has not started.</span>
+            <span id="form-status-message">Idle — ready for a demo submission.</span>
           </div>
         </form>
       </section>
